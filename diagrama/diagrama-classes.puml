@@ -1,0 +1,69 @@
+@startuml diagrama-classes
+title Integração: Chain of Responsibility + Strategy + Template Method - Pedidos de Compra
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #333333
+  ArrowColor #333333
+}
+hide empty members
+package "Template Method" <<Rectangle>> {
+  abstract class Pedido {
+    - descricao : String
+    - valorItens : float
+    - formaPagamento : FormaPagamento
+    + Pedido(descricao : String, valorItens : float, formaPagamento : FormaPagamento)
+    + setFormaPagamento(formaPagamento : FormaPagamento)
+    + {abstract} calcularFrete() : float
+    + calcularValorFinal() : float
+    + getTipo() : String
+    + processar(aprovador : Aprovador) : String
+  }
+  class PedidoNacional {
+    + calcularFrete() : float
+    + getTipo() : String
+  }
+  class PedidoInternacional {
+    + calcularFrete() : float
+    + getTipo() : String
+  }
+  class PedidoRetirada {
+    + calcularFrete() : float
+  }
+}
+package "Strategy" <<Rectangle>> {
+  interface FormaPagamento {
+    + calcular(valor : float) : float
+  }
+  class PagamentoPix
+  class PagamentoBoleto
+  class PagamentoCartaoCredito
+}
+package "Chain of Responsibility" <<Rectangle>> {
+  abstract class Aprovador {
+    - aprovadorSuperior : Aprovador
+    + setAprovadorSuperior(aprovadorSuperior : Aprovador)
+    + {abstract} getDescricaoCargo() : String
+    + {abstract} getLimiteAprovacao() : float
+    + aprovarPedido(pedido : Pedido) : String
+  }
+  class AprovadorSupervisor
+  class AprovadorGerente
+  class AprovadorDiretor
+}
+Pedido <|-- PedidoNacional
+Pedido <|-- PedidoInternacional
+Pedido <|-- PedidoRetirada
+Pedido o--> FormaPagamento : formaPagamento
+FormaPagamento <|.. PagamentoPix
+FormaPagamento <|.. PagamentoBoleto
+FormaPagamento <|.. PagamentoCartaoCredito
+Pedido ..> Aprovador : processar()
+Aprovador ..> Pedido : aprovarPedido()
+Aprovador o--> "0..1" Aprovador : aprovadorSuperior
+Aprovador <|-- AprovadorSupervisor
+Aprovador <|-- AprovadorGerente
+Aprovador <|-- AprovadorDiretor
+@enduml
